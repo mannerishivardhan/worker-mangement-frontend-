@@ -27,23 +27,18 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user.dart';
+import '../core/config/api_config.dart';
 
 class AuthService {
   late final Dio _dio;
 
-  // Backend base URL - Update this to your actual backend URL
-  static const String baseUrl = 'http://192.168.55.104:3000/api';
-
   AuthService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        baseUrl: ApiConfig.baseUrl,
+        connectTimeout: ApiConfig.connectTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
+        headers: ApiConfig.headers,
       ),
     );
 
@@ -65,7 +60,7 @@ class AuthService {
   }) async {
     try {
       debugPrint('🔐 Attempting login for: $email');
-      debugPrint('📡 Backend URL: $baseUrl/auth/login');
+      debugPrint('📡 Backend URL: ${ApiConfig.baseUrl}/auth/login');
 
       final response = await _dio.post(
         '/auth/login',

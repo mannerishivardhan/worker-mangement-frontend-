@@ -5,13 +5,17 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/attendance.dart';
+import '../core/config/api_config.dart';
 
 class AttendanceService {
   final Dio _dio = Dio();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  static const String baseUrl = 'http://192.168.55.104:3000/api/attendance';
 
   AttendanceService() {
+    _dio.options.baseUrl = ApiConfig.baseUrl;
+    _dio.options.connectTimeout = ApiConfig.connectTimeout;
+    _dio.options.receiveTimeout = ApiConfig.receiveTimeout;
+
     // Add interceptor to attach JWT token
     _dio.interceptors.add(
       InterceptorsWrapper(
@@ -44,7 +48,10 @@ class AttendanceService {
       if (startDate != null) queryParams['startDate'] = startDate;
       if (endDate != null) queryParams['endDate'] = endDate;
 
-      final response = await _dio.get(baseUrl, queryParameters: queryParams);
+      final response = await _dio.get(
+        '/attendance',
+        queryParameters: queryParams,
+      );
 
       final List<dynamic> data = response.data['data'] as List;
       return data.map((json) => Attendance.fromJson(json)).toList();
@@ -60,7 +67,7 @@ class AttendanceService {
   }) async {
     try {
       final response = await _dio.post(
-        '$baseUrl/entry',
+        '/attendance/entry',
         data: {'userId': userId, 'entryTime': entryTime.toIso8601String()},
       );
 
@@ -81,7 +88,7 @@ class AttendanceService {
   }) async {
     try {
       final response = await _dio.post(
-        '$baseUrl/exit',
+        '/attendance/exit',
         data: {'userId': userId, 'exitTime': exitTime.toIso8601String()},
       );
 
@@ -110,7 +117,7 @@ class AttendanceService {
       if (status != null) data['status'] = status;
 
       final response = await _dio.post(
-        '$baseUrl/$attendanceId/correct',
+        '/attendance/$attendanceId/correct',
         data: data,
       );
 

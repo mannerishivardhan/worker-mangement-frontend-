@@ -6,16 +6,16 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/employee.dart';
+import '../core/config/api_config.dart';
 
 class EmployeeService {
-  static const String baseUrl = 'http://192.168.55.104:3000/api';
   final Dio _dio;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   EmployeeService({Dio? dio}) : _dio = dio ?? Dio() {
-    _dio.options.baseUrl = baseUrl;
-    _dio.options.connectTimeout = const Duration(seconds: 10);
-    _dio.options.receiveTimeout = const Duration(seconds: 10);
+    _dio.options.baseUrl = ApiConfig.baseUrl;
+    _dio.options.connectTimeout = ApiConfig.connectTimeout;
+    _dio.options.receiveTimeout = ApiConfig.receiveTimeout;
 
     // Add interceptor to include token in all requests
     _dio.interceptors.add(
