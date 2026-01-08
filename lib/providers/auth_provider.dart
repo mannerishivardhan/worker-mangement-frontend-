@@ -175,6 +175,10 @@ class AuthProvider with ChangeNotifier {
 
       _setLoading(false);
       debugPrint('✅ Login complete!');
+
+      // Trigger rebuild to navigate to dashboard
+      notifyListeners();
+
       return true;
     } catch (e) {
       debugPrint('❌ Login error: $e');

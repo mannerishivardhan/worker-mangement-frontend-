@@ -80,15 +80,38 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (success && mounted) {
-        // Login successful - navigation will be handled by main.dart
-        // The app will automatically navigate to the appropriate dashboard
+        // Login successful - show snackbar and navigate
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Login successful!'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 1),
           ),
         );
+
+        // Navigate to appropriate dashboard based on role
+        final user = authProvider.currentUser;
+        if (user != null) {
+          String routeName;
+          switch (user.role) {
+            case 'super_admin':
+              routeName = '/super-admin-dashboard';
+              break;
+            case 'admin':
+              routeName = '/admin-dashboard';
+              break;
+            case 'manager':
+              routeName = '/manager-dashboard';
+              break;
+            case 'employee':
+              routeName = '/employee-dashboard';
+              break;
+            default:
+              routeName = '/employee-dashboard';
+          }
+
+          Navigator.of(context).pushReplacementNamed(routeName);
+        }
       } else if (mounted) {
         // Login failed - show error from provider
         setState(() {

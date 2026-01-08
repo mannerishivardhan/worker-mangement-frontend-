@@ -6,7 +6,7 @@
 /// Backend Endpoints:
 /// - POST /api/auth/login - Email/password login
 /// - POST /api/auth/logout - Logout (optional)
-/// - GET /api/auth/me - Validate token and get user
+/// - GET /api/auth/verify - Validate token and get user
 /// - POST /api/auth/refresh - Refresh JWT token
 ///
 /// Features:
@@ -139,12 +139,16 @@ class AuthService {
   Future<User?> validateToken(String token) async {
     try {
       final response = await _dio.get(
-        '/auth/me',
+        '/auth/verify',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        return User.fromJson(response.data['user']);
+        // Backend returns: { success: true, data: { user fields } }
+        final responseData = response.data;
+        if (responseData['success'] == true && responseData['data'] != null) {
+          return User.fromJson(responseData['data']);
+        }
       }
 
       return null;

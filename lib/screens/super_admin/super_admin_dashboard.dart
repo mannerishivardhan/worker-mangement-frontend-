@@ -252,6 +252,16 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
             Navigator.of(context).pushNamed('/attendance');
           },
         ),
+        const SizedBox(height: AppSpacing.sm),
+        _buildActionButton(
+          context,
+          isDark: isDark,
+          icon: Icons.payments_outlined,
+          label: 'Salary Reports',
+          onTap: () {
+            Navigator.of(context).pushNamed('/system-salary');
+          },
+        ),
       ],
     );
   }
@@ -367,11 +377,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
             label: 'Employees',
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const EmployeesScreen(),
-                ),
-              );
+              Navigator.of(context).pushNamed('/employees');
             },
           ),
           _buildDrawerItem(
@@ -388,11 +394,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
             label: 'Attendance',
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AttendanceScreen(),
-                ),
-              );
+              Navigator.of(context).pushNamed('/attendance');
             },
           ),
           _buildDrawerItem(
@@ -400,7 +402,10 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
             isDark: isDark,
             icon: Icons.account_balance_wallet_outlined,
             label: 'Salary',
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).pushNamed('/system-salary');
+            },
           ),
           const Divider(),
           _buildDrawerItem(

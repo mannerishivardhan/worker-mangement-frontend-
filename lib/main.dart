@@ -21,6 +21,8 @@ import 'screens/super_admin/super_admin_dashboard.dart';
 import 'screens/super_admin/departments_screen.dart';
 import 'screens/super_admin/employees_screen.dart';
 import 'screens/super_admin/attendance_screen.dart';
+import 'screens/super_admin/system_salary_dashboard.dart';
+import 'screens/employee/my_salary_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +42,7 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<AuthProvider>(
         builder: (context, authProvider, _) {
+          // Rebuild MaterialApp when auth state changes
           return MaterialApp(
             title: 'Security Management',
             debugShowCheckedModeBanner: false,
@@ -49,17 +52,28 @@ class MyApp extends StatelessWidget {
             darkTheme: AppTheme.dark(userRole: authProvider.userRole),
             themeMode: ThemeMode.system,
 
-            // Initial route based on auth state
-            home: _getInitialScreen(authProvider),
+            // Use builder to rebuild on auth state change
+            home: Builder(
+              builder: (context) => _getInitialScreen(authProvider),
+            ),
 
             // Named routes for navigation
             routes: {
               '/splash': (context) => const SplashScreen(),
               '/login': (context) => const LoginScreen(),
+              '/super-admin-dashboard': (context) =>
+                  const SuperAdminDashboard(),
+              '/admin-dashboard': (context) =>
+                  const SuperAdminDashboard(), // TODO: Create AdminDashboard
+              '/manager-dashboard': (context) =>
+                  const SuperAdminDashboard(), // TODO: Create ManagerDashboard
+              '/employee-dashboard': (context) =>
+                  const SuperAdminDashboard(), // TODO: Create EmployeeDashboard
               '/departments': (context) => const DepartmentsScreen(),
               '/employees': (context) => const EmployeesScreen(),
               '/attendance': (context) => const AttendanceScreen(),
-              // Add more routes as we build Phase 3+
+              '/my-salary': (context) => const MySalaryScreen(),
+              '/system-salary': (context) => const SystemSalaryDashboard(),
             },
           );
         },
