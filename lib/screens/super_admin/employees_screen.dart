@@ -4,6 +4,7 @@
 /// NotebookLM design: pure white, outlined icons, light blue accents.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/app_spacing.dart';
@@ -16,7 +17,6 @@ import 'employee_history_screen.dart';
 
 class EmployeesScreen extends StatefulWidget {
   const EmployeesScreen({super.key});
-
   @override
   State<EmployeesScreen> createState() => _EmployeesScreenState();
 }
@@ -140,8 +140,29 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: TextField(
               controller: _searchController,
+              inputFormatters: [
+                // If the input is purely numeric, limit to 5 digits
+                TextInputFormatter.withFunction((oldValue, newValue) {
+                  // Check if new value is purely numeric
+                  if (newValue.text.isNotEmpty &&
+                      RegExp(r'^\d+$').hasMatch(newValue.text)) {
+                    // Limit to 5 digits and pad with zeros
+                    if (newValue.text.length <= 5) {
+                      return newValue;
+                    } else {
+                      // Only keep first 5 digits
+                      return TextEditingValue(
+                        text: newValue.text.substring(0, 5),
+                        selection: TextSelection.collapsed(offset: 5),
+                      );
+                    }
+                  }
+                  // Allow non-numeric (for name/email search)
+                  return newValue;
+                }),
+              ],
               decoration: InputDecoration(
-                hintText: 'Search by name, ID (e.g., 1234), or email...',
+                hintText: 'Search by name, ID (5 digits), or email...',
                 prefixIcon: Icon(
                   Icons.search_outlined,
                   color: AppColors.textSecondary(isDark),
@@ -347,132 +368,433 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
   }
 
   Widget _buildEmployeeCard(Employee employee, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: BoxDecoration(
-        color: AppColors.surface(isDark),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: AppColors.border(isDark), width: 1),
-      ),
-      child: Row(
-        children: [
-          // Avatar
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.primary(isDark).withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                employee.firstName[0].toUpperCase(),
-                style: AppTypography.heading2.copyWith(
-                  color: AppColors.primary(isDark),
+    return GestureDetector(
+      onTap: () {
+        _showEmployeeDetails(employee, isDark);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
+        decoration: BoxDecoration(
+          color: AppColors.surface(isDark),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          border: Border.all(color: AppColors.border(isDark), width: 1),
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.primary(isDark).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  employee.firstName[0].toUpperCase(),
+                  style: AppTypography.heading2.copyWith(
+                    color: AppColors.primary(isDark),
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: AppSpacing.md),
 
-          // Employee info
+            // Employee info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    employee.fullName,
+                    style: AppTypography.heading3.copyWith(
+                      color: AppColors.textPrimary(isDark),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    employee.employeeId,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary(isDark),
+                    ),
+                  ),
+                  if (employee.departmentName != null) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.business_outlined,
+                          size: 14,
+                          color: AppColors.textTertiary(isDark),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          employee.departmentName!,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textTertiary(isDark),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Role badge
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: _getRoleColor(employee.role, isDark).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: Text(
+                _getRoleLabel(employee.role),
+                style: AppTypography.labelSmall.copyWith(
+                  color: _getRoleColor(employee.role, isDark),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: AppSpacing.sm),
+
+            // Chevron icon to indicate tappable
+            Icon(
+              Icons.chevron_right,
+              color: AppColors.textTertiary(isDark),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEmployeeDetails(Employee employee, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface(isDark),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.radiusLg),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Handle bar and close button
+              SizedBox(
+                height: 48,
+                child: Stack(
+                  children: [
+                    // Handle bar
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.sm,
+                        ),
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.border(isDark),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    // Close button
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(
+                          Icons.close,
+                          color: AppColors.textSecondary(isDark),
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header with avatar and name
+                      Row(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary(isDark).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                employee.firstName[0].toUpperCase(),
+                                style: AppTypography.heading1.copyWith(
+                                  color: AppColors.primary(isDark),
+                                  fontSize: 36,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  employee.fullName,
+                                  style: AppTypography.heading2.copyWith(
+                                    color: AppColors.textPrimary(isDark),
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.sm,
+                                    vertical: AppSpacing.xs,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _getRoleColor(
+                                      employee.role,
+                                      isDark,
+                                    ).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(
+                                      AppSpacing.radiusSm,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    _getRoleLabel(employee.role),
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: _getRoleColor(
+                                        employee.role,
+                                        isDark,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: AppSpacing.lg),
+                      const Divider(),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // Employee Details
+                      Text(
+                        'Employee Information',
+                        style: AppTypography.heading3.copyWith(
+                          color: AppColors.textPrimary(isDark),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+
+                      _buildDetailRow(
+                        'Employee ID',
+                        employee.employeeId,
+                        Icons.badge_outlined,
+                        isDark,
+                      ),
+                      _buildDetailRow(
+                        'Email',
+                        employee.email,
+                        Icons.email_outlined,
+                        isDark,
+                      ),
+                      if (employee.departmentName != null)
+                        _buildDetailRow(
+                          'Department',
+                          employee.departmentName!,
+                          Icons.business_outlined,
+                          isDark,
+                        ),
+                      if (employee.shiftName != null &&
+                          employee.shiftName != 'null')
+                        _buildDetailRow(
+                          'Shift',
+                          employee.shiftName!,
+                          Icons.schedule_outlined,
+                          isDark,
+                        ),
+                      if (employee.monthlySalary > 0)
+                        _buildDetailRow(
+                          'Monthly Salary',
+                          '\$${employee.monthlySalary.toStringAsFixed(2)}',
+                          Icons.payments_outlined,
+                          isDark,
+                        ),
+                      if (employee.joiningDate != null)
+                        _buildDetailRow(
+                          'Joining Date',
+                          _formatDate(employee.joiningDate!),
+                          Icons.calendar_today_outlined,
+                          isDark,
+                        ),
+                      _buildDetailRow(
+                        'Status',
+                        employee.isActive ? 'Active' : 'Inactive',
+                        employee.isActive
+                            ? Icons.check_circle_outline
+                            : Icons.cancel_outlined,
+                        isDark,
+                        valueColor: employee.isActive
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+
+                      const SizedBox(height: AppSpacing.lg),
+                      const Divider(),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // Action buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => EmployeeHistoryScreen(
+                                      employee: employee,
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: Icon(
+                                Icons.history_outlined,
+                                color: AppColors.primary(isDark),
+                              ),
+                              label: Text(
+                                'View History',
+                                style: TextStyle(
+                                  color: AppColors.primary(isDark),
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: AppColors.primary(isDark),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.md,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                final result = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) =>
+                                      EmployeeDialog(employee: employee),
+                                );
+                                if (result == true) {
+                                  _loadEmployees();
+                                }
+                              },
+                              icon: const Icon(Icons.edit_outlined),
+                              label: const Text('Edit Employee'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary(isDark),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.md,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(
+    String label,
+    String value,
+    IconData icon,
+    bool isDark, {
+    Color? valueColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppColors.textSecondary(isDark)),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  employee.fullName,
-                  style: AppTypography.heading3.copyWith(
-                    color: AppColors.textPrimary(isDark),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  employee.employeeId,
+                  label,
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary(isDark),
                   ),
                 ),
-                if (employee.departmentName != null) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.business_outlined,
-                        size: 14,
-                        color: AppColors.textTertiary(isDark),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        employee.departmentName!,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textTertiary(isDark),
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: valueColor ?? AppColors.textPrimary(isDark),
+                    fontWeight: FontWeight.w500,
                   ),
-                ],
-              ],
-            ),
-          ),
-
-          // Role badge
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: _getRoleColor(employee.role, isDark).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            ),
-            child: Text(
-              _getRoleLabel(employee.role),
-              style: AppTypography.labelSmall.copyWith(
-                color: _getRoleColor(employee.role, isDark),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: AppSpacing.sm),
-
-          // History button
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      EmployeeHistoryScreen(employee: employee),
                 ),
-              );
-            },
-            icon: Icon(
-              Icons.history_outlined,
-              color: AppColors.textSecondary(isDark),
-              size: 20,
-            ),
-          ),
-
-          // Edit button
-          IconButton(
-            onPressed: () async {
-              final result = await showDialog<bool>(
-                context: context,
-                builder: (context) => EmployeeDialog(employee: employee),
-              );
-              if (result == true) {
-                _loadEmployees(); // Reload list after editing
-              }
-            },
-            icon: Icon(
-              Icons.edit_outlined,
-              color: AppColors.textSecondary(isDark),
-              size: 20,
+              ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   Color _getRoleColor(String role, bool isDark) {

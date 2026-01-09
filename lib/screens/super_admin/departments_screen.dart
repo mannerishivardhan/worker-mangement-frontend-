@@ -250,133 +250,418 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
   }
 
   Widget _buildDepartmentCard(Department department, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: BoxDecoration(
-        color: AppColors.surface(isDark),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: AppColors.border(isDark), width: 1),
-      ),
-      child: Row(
-        children: [
-          // Icon
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: AppColors.primary(isDark).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+    return GestureDetector(
+      onTap: () {
+        _showDepartmentDetails(department, isDark);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
+        decoration: BoxDecoration(
+          color: AppColors.surface(isDark),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          border: Border.all(color: AppColors.border(isDark), width: 1),
+        ),
+        child: Row(
+          children: [
+            // Icon
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.primary(isDark).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: Icon(
+                Icons.business_outlined,
+                color: AppColors.primary(isDark),
+                size: 24,
+              ),
             ),
-            child: Icon(
-              Icons.business_outlined,
-              color: AppColors.primary(isDark),
-              size: 24,
+            const SizedBox(width: AppSpacing.md),
+
+            // Department info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    department.name,
+                    style: AppTypography.heading3.copyWith(
+                      color: AppColors.textPrimary(isDark),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  if (department.code != null)
+                    Text(
+                      'Code: ${department.code}',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary(isDark),
+                      ),
+                    ),
+                  if (department.headName != null) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.person_outline,
+                          size: 14,
+                          color: AppColors.textTertiary(isDark),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          department.headName!,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textTertiary(isDark),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Employee count badge
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primary(isDark).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.people_outline,
+                    size: 16,
+                    color: AppColors.primary(isDark),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${department.employeeCount}',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.primary(isDark),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: AppSpacing.sm),
+
+            // Chevron icon to indicate tappable
+            Icon(
+              Icons.chevron_right,
+              color: AppColors.textTertiary(isDark),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDepartmentDetails(Department department, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface(isDark),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.radiusLg),
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
+          child: Column(
+            children: [
+              // Handle bar and close button
+              SizedBox(
+                height: 48,
+                child: Stack(
+                  children: [
+                    // Handle bar
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.sm,
+                        ),
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.border(isDark),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    // Close button
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(
+                          Icons.close,
+                          color: AppColors.textSecondary(isDark),
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-          // Department info
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header with icon and name
+                      Row(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary(isDark).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.radiusMd,
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.business_outlined,
+                                color: AppColors.primary(isDark),
+                                size: 40,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  department.name,
+                                  style: AppTypography.heading2.copyWith(
+                                    color: AppColors.textPrimary(isDark),
+                                  ),
+                                ),
+                                if (department.code != null) ...[
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.sm,
+                                      vertical: AppSpacing.xs,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary(
+                                        isDark,
+                                      ).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(
+                                        AppSpacing.radiusSm,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      department.code!,
+                                      style: AppTypography.labelSmall.copyWith(
+                                        color: AppColors.primary(isDark),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: AppSpacing.lg),
+                      const Divider(),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // Department Details
+                      Text(
+                        'Department Information',
+                        style: AppTypography.heading3.copyWith(
+                          color: AppColors.textPrimary(isDark),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+
+                      _buildDetailRow(
+                        'Department ID',
+                        department.departmentId ?? 'N/A',
+                        Icons.badge_outlined,
+                        isDark,
+                      ),
+                      if (department.code != null)
+                        _buildDetailRow(
+                          'Department Code',
+                          department.code!,
+                          Icons.code_outlined,
+                          isDark,
+                        ),
+                      if (department.headName != null)
+                        _buildDetailRow(
+                          'Department Head',
+                          department.headName!,
+                          Icons.person_outline,
+                          isDark,
+                        ),
+                      _buildDetailRow(
+                        'Total Employees',
+                        '${department.employeeCount}',
+                        Icons.people_outline,
+                        isDark,
+                      ),
+                      _buildDetailRow(
+                        'Status',
+                        department.isActive ? 'Active' : 'Inactive',
+                        department.isActive
+                            ? Icons.check_circle_outline
+                            : Icons.cancel_outlined,
+                        isDark,
+                        valueColor: department.isActive
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                      if (department.description != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'Description',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary(isDark),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          department.description!,
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.textPrimary(isDark),
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: AppSpacing.lg),
+                      const Divider(),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // Action buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        DepartmentHistoryScreen(
+                                          department: department,
+                                        ),
+                                  ),
+                                );
+                              },
+                              icon: Icon(
+                                Icons.history_outlined,
+                                color: AppColors.primary(isDark),
+                              ),
+                              label: Text(
+                                'View History',
+                                style: TextStyle(
+                                  color: AppColors.primary(isDark),
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: AppColors.primary(isDark),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.md,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                final result = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) =>
+                                      DepartmentDialog(department: department),
+                                );
+                                if (result == true) {
+                                  _loadDepartments();
+                                }
+                              },
+                              icon: const Icon(Icons.edit_outlined),
+                              label: const Text('Edit Department'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary(isDark),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.md,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(
+    String label,
+    String value,
+    IconData icon,
+    bool isDark, {
+    Color? valueColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppColors.textSecondary(isDark)),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  department.name,
-                  style: AppTypography.heading3.copyWith(
-                    color: AppColors.textPrimary(isDark),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'ID: ${department.departmentId ?? 'N/A'}',
+                  label,
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary(isDark),
                   ),
                 ),
-                if (department.code != null) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'Code: ${department.code}',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary(isDark),
-                    ),
-                  ),
-                ],
-                if (department.headName != null) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'Head: ${department.headName}',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary(isDark),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-
-          // Employee count badge
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.primary(isDark).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.people_outline,
-                  size: 16,
-                  color: AppColors.primary(isDark),
-                ),
-                const SizedBox(width: 4),
+                const SizedBox(height: 2),
                 Text(
-                  '${department.employeeCount}',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.primary(isDark),
+                  value,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: valueColor ?? AppColors.textPrimary(isDark),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
-            ),
-          ),
-
-          const SizedBox(width: AppSpacing.sm),
-
-          // History button
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      DepartmentHistoryScreen(department: department),
-                ),
-              );
-            },
-            icon: Icon(
-              Icons.history_outlined,
-              color: AppColors.textSecondary(isDark),
-              size: 20,
-            ),
-          ),
-
-          // Edit button
-          IconButton(
-            onPressed: () async {
-              final result = await showDialog<bool>(
-                context: context,
-                builder: (context) => DepartmentDialog(department: department),
-              );
-              if (result == true) {
-                _loadDepartments(); // Reload list after editing
-              }
-            },
-            icon: Icon(
-              Icons.edit_outlined,
-              color: AppColors.textSecondary(isDark),
-              size: 20,
             ),
           ),
         ],
