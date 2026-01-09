@@ -25,7 +25,7 @@ class DepartmentHistoryScreen extends StatelessWidget {
       {
         'action': 'Department Created',
         'timestamp': department.createdAt,
-        'performedBy': department.createdBy ?? 'System',
+        'performedBy': _formatPerformedBy(department.createdByRole),
         'icon': Icons.add_circle_outline,
         'color': AppColors.success(isDark),
       },
@@ -173,5 +173,23 @@ class DepartmentHistoryScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// Format role name for display
+  String _formatPerformedBy(String? role) {
+    if (role == null) return 'System';
+
+    switch (role.toLowerCase()) {
+      case 'super_admin':
+        return 'Super Admin';
+      case 'admin':
+        return 'Admin';
+      case 'tenant':
+        return 'Tenant';
+      case 'employee':
+        return 'Employee';
+      default:
+        return role;
+    }
   }
 }

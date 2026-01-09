@@ -25,7 +25,7 @@ class EmployeeHistoryScreen extends StatelessWidget {
       {
         'action': 'Employee Created',
         'timestamp': employee.createdAt,
-        'performedBy': employee.createdBy ?? 'System',
+        'performedBy': _formatPerformedBy(employee.createdByRole),
         'icon': Icons.person_add_outlined,
         'color': AppColors.success(isDark),
       },
@@ -173,5 +173,23 @@ class EmployeeHistoryScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// Format role name for display
+  String _formatPerformedBy(String? role) {
+    if (role == null) return 'System';
+
+    switch (role.toLowerCase()) {
+      case 'super_admin':
+        return 'Super Admin';
+      case 'admin':
+        return 'Admin';
+      case 'tenant':
+        return 'Tenant';
+      case 'employee':
+        return 'Employee';
+      default:
+        return role;
+    }
   }
 }

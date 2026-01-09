@@ -21,7 +21,9 @@ class Employee {
   final DateTime createdAt;
   final DateTime? updatedAt;
   final String? createdBy;
+  final String? createdByRole;
   final String? updatedBy;
+  final String? updatedByRole;
 
   Employee({
     required this.id,
@@ -41,7 +43,9 @@ class Employee {
     required this.createdAt,
     this.updatedAt,
     this.createdBy,
+    this.createdByRole,
     this.updatedBy,
+    this.updatedByRole,
   });
 
   String get fullName => '$firstName $lastName';
@@ -72,7 +76,9 @@ class Employee {
       createdAt: _parseDate(json['created_at'] ?? json['createdAt']),
       updatedAt: _parseDate(json['updated_at'] ?? json['updatedAt']),
       createdBy: json['created_by'] ?? json['createdBy'],
+      createdByRole: json['created_by_role'] ?? json['createdByRole'],
       updatedBy: json['updated_by'] ?? json['updatedBy'],
+      updatedByRole: json['updated_by_role'] ?? json['updatedByRole'],
     );
   }
 
@@ -95,7 +101,9 @@ class Employee {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
       'createdBy': createdBy,
+      'createdByRole': createdByRole,
       'updatedBy': updatedBy,
+      'updatedByRole': updatedByRole,
     };
   }
 

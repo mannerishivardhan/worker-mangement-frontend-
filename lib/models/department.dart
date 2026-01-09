@@ -18,7 +18,9 @@ class Department {
   final DateTime createdAt;
   final DateTime? updatedAt;
   final String? createdBy;
+  final String? createdByRole;
   final String? updatedBy;
+  final String? updatedByRole;
 
   Department({
     required this.id,
@@ -34,7 +36,9 @@ class Department {
     required this.createdAt,
     this.updatedAt,
     this.createdBy,
+    this.createdByRole,
     this.updatedBy,
+    this.updatedByRole,
   });
 
   /// Create Department from JSON (backend response)
@@ -53,7 +57,9 @@ class Department {
       createdAt: _parseDate(json['created_at'] ?? json['createdAt']),
       updatedAt: _parseDate(json['updated_at'] ?? json['updatedAt']),
       createdBy: json['created_by'] ?? json['createdBy'],
+      createdByRole: json['created_by_role'] ?? json['createdByRole'],
       updatedBy: json['updated_by'] ?? json['updatedBy'],
+      updatedByRole: json['updated_by_role'] ?? json['updatedByRole'],
     );
   }
 
@@ -94,7 +100,9 @@ class Department {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? createdBy,
+    String? createdByRole,
     String? updatedBy,
+    String? updatedByRole,
   }) {
     return Department(
       id: id ?? this.id,
@@ -109,7 +117,9 @@ class Department {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       createdBy: createdBy ?? this.createdBy,
+      createdByRole: createdByRole ?? this.createdByRole,
       updatedBy: updatedBy ?? this.updatedBy,
+      updatedByRole: updatedByRole ?? this.updatedByRole,
     );
   }
 
