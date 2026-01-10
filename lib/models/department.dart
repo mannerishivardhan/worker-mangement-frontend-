@@ -3,6 +3,56 @@
 /// Represents a department in the organization.
 /// Used for organizing employees and managing department-specific data.
 
+/// Department Head information
+class DepartmentHead {
+  final String? userId;
+  final String? employeeId;
+  final String? employeeName;
+  final DateTime? assignedAt;
+  final String? assignedBy;
+
+  DepartmentHead({
+    this.userId,
+    this.employeeId,
+    this.employeeName,
+    this.assignedAt,
+    this.assignedBy,
+  });
+
+  factory DepartmentHead.fromJson(Map<String, dynamic> json) {
+    return DepartmentHead(
+      userId: json['userId'],
+      employeeId: json['employeeId'],
+      employeeName: json['employeeName'],
+      assignedAt: json['assignedAt'] != null
+          ? _parseDate(json['assignedAt'])
+          : null,
+      assignedBy: json['assignedBy'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'employeeId': employeeId,
+      'employeeName': employeeName,
+      'assignedAt': assignedAt?.toIso8601String(),
+      'assignedBy': assignedBy,
+    };
+  }
+
+  static DateTime _parseDate(dynamic date) {
+    if (date == null) return DateTime.now();
+    if (date is String) return DateTime.parse(date);
+    if (date is Map && date.containsKey('_seconds')) {
+      return DateTime.fromMillisecondsSinceEpoch(
+        date['_seconds'] * 1000 + (date['_nanoseconds'] ~/ 1000000),
+      );
+    }
+    return DateTime.now();
+  }
+}
+
 /// Department Role with shifts
 class DepartmentRole {
   final String name;
@@ -56,17 +106,28 @@ class RoleShift {
 
 class Department {
   final String id;
-  final String?
-  departmentId; // Auto-generated ID like DEPT_XXXX (optional for old departments)
+  final String? departmentId; // Auto-generated ID like DEPT_XXXX
   final String name;
   final String? code;
   final String? description;
+
+  // NEW: Status fields
+  final String status; // 'active' or 'deactivated'
+  final String? deactivationReason;
+  final DateTime? deactivatedAt;
+  final String? deactivatedBy;
+
+  // NEW: Department head
+  final DepartmentHead? departmentHead;
+
+  // Keep old fields for backward compatibility
   final String? headId;
   final String? headName;
+
   final int employeeCount;
   final bool isActive;
   final bool hasShifts;
-  final List<DepartmentRole> roles; // NEW: Department roles with shifts
+  final List<DepartmentRole> roles;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final String? createdBy;
@@ -80,12 +141,17 @@ class Department {
     required this.name,
     this.code,
     this.description,
+    this.status = 'active',
+    this.deactivationReason,
+    this.deactivatedAt,
+    this.deactivatedBy,
+    this.departmentHead,
     this.headId,
     this.headName,
     this.employeeCount = 0,
     this.isActive = true,
     this.hasShifts = false,
-    this.roles = const [], // NEW
+    this.roles = const [],
     required this.createdAt,
     this.updatedAt,
     this.createdBy,
@@ -102,6 +168,15 @@ class Department {
       name: json['name'] ?? '',
       code: json['code'],
       description: json['description'],
+      status: json['status'] ?? 'active',
+      deactivationReason: json['deactivationReason'],
+      deactivatedAt: json['deactivatedAt'] != null
+          ? _parseDate(json['deactivatedAt'])
+          : null,
+      deactivatedBy: json['deactivatedBy'],
+      departmentHead: json['departmentHead'] != null
+          ? DepartmentHead.fromJson(json['departmentHead'])
+          : null,
       headId: json['head_id'] ?? json['headId'],
       headName: json['head_name'] ?? json['headName'],
       employeeCount: json['employee_count'] ?? json['employeeCount'] ?? 0,
@@ -111,7 +186,7 @@ class Department {
           (json['roles'] as List<dynamic>?)
               ?.map((r) => DepartmentRole.fromJson(r))
               .toList() ??
-          [], // NEW
+          [],
       createdAt: _parseDate(json['created_at'] ?? json['createdAt']),
       updatedAt: _parseDate(json['updated_at'] ?? json['updatedAt']),
       createdBy: json['created_by'] ?? json['createdBy'],
