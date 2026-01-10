@@ -16,6 +16,11 @@ class Attendance {
   final DateTime? entryTime;
   final DateTime? exitTime;
   final int? workDurationMinutes;
+  final double? regularHours; // NEW: Regular shift hours worked
+  final double? overtimeHours; // NEW: Overtime hours worked
+  final double? totalHours; // NEW: Total hours (regular + overtime)
+  final String? overtimeApprovedBy; // NEW: Who approved the overtime
+  final String? overtimeReason; // NEW: Reason for overtime
   final String status; // pending, present, absent
   final bool isCorrected;
   final String? correctedBy;
@@ -38,6 +43,11 @@ class Attendance {
     this.entryTime,
     this.exitTime,
     this.workDurationMinutes,
+    this.regularHours,
+    this.overtimeHours,
+    this.totalHours,
+    this.overtimeApprovedBy,
+    this.overtimeReason,
     required this.status,
     required this.isCorrected,
     this.correctedBy,
@@ -66,6 +76,11 @@ class Attendance {
           ? _parseTimestamp(json['exitTime'])
           : null,
       workDurationMinutes: json['workDurationMinutes'] as int?,
+      regularHours: (json['regularHours'] as num?)?.toDouble(),
+      overtimeHours: (json['overtimeHours'] as num?)?.toDouble(),
+      totalHours: (json['totalHours'] as num?)?.toDouble(),
+      overtimeApprovedBy: json['overtimeApprovedBy'] as String?,
+      overtimeReason: json['overtimeReason'] as String?,
       status: json['status'] as String,
       isCorrected: json['isCorrected'] as bool? ?? false,
       correctedBy: json['correctedBy'] as String?,

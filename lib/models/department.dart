@@ -3,10 +3,70 @@
 /// Represents a department in the organization.
 /// Used for organizing employees and managing department-specific data.
 
+/// Department Role with shifts
+class DepartmentRole {
+  final String name;
+  final List<RoleShift> shifts;
+
+  DepartmentRole({
+    required this.name,
+    required this.shifts,
+  });
+
+  factory DepartmentRole.fromJson(Map<String, dynamic> json) {
+    return DepartmentRole(
+      name: json['name'] ?? '',
+      shifts: (json['shifts'] as List<dynamic>?)
+              ?.map((s) => RoleShift.fromJson(s))
+              .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'shifts': shifts.map((s) => s.toJson()).toList(),
+    };
+  }
+}
+
+/// Shift within a role
+class RoleShift {
+  final String name;
+  final String startTime; // HH:mm format
+  final String endTime; // HH:mm format
+
+  RoleShift({
+    required this.name,
+    required this.startTime,
+    required this.endTime,
+  });
+
+  /// Get display format for time range (e.g., "06:00 - 14:00")
+  String get timeDisplay => '$startTime - $endTime';
+
+  factory RoleShift.fromJson(Map<String, dynamic> json) {
+    return RoleShift(
+      name: json['name'] ?? '',
+      startTime: json['startTime'] ?? json['start_time'] ?? '',
+      endTime: json['endTime'] ?? json['end_time'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'startTime': startTime,
+      'endTime': endTime,
+    };
+  }
+}
+
 class Department {
   final String id;
   final String?
-  departmentId; // Auto-generated ID like DEPT_XXXX (optional for old departments)
+      departmentId; // Auto-generated ID like DEPT_XXXX (optional for old departments)
   final String name;
   final String? code;
   final String? description;
@@ -15,6 +75,7 @@ class Department {
   final int employeeCount;
   final bool isActive;
   final bool hasShifts;
+  final List<DepartmentRole> roles; // NEW: Department roles with shifts
   final DateTime createdAt;
   final DateTime? updatedAt;
   final String? createdBy;
@@ -33,6 +94,7 @@ class Department {
     this.employeeCount = 0,
     this.isActive = true,
     this.hasShifts = false,
+    this.roles = const [], // NEW
     required this.createdAt,
     this.updatedAt,
     this.createdBy,
@@ -54,6 +116,10 @@ class Department {
       employeeCount: json['employee_count'] ?? json['employeeCount'] ?? 0,
       isActive: json['is_active'] ?? json['isActive'] ?? true,
       hasShifts: json['has_shifts'] ?? json['hasShifts'] ?? false,
+      roles: (json['roles'] as List<dynamic>?)
+              ?.map((r) => DepartmentRole.fromJson(r))
+              .toList() ??
+          [], // NEW
       createdAt: _parseDate(json['created_at'] ?? json['createdAt']),
       updatedAt: _parseDate(json['updated_at'] ?? json['updatedAt']),
       createdBy: json['created_by'] ?? json['createdBy'],
@@ -71,6 +137,8 @@ class Department {
       if (description != null) 'description': description,
       if (headId != null) 'headId': headId,
       'isActive': isActive,
+      'hasShifts': hasShifts,
+      'roles': roles.map((r) => r.toJson()).toList(), // NEW
     };
   }
 

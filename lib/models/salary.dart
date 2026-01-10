@@ -18,6 +18,11 @@ class SalaryCalculation {
   final int daysPending;
   final double dailyRate;
   final double calculatedSalary;
+  // NEW: Overtime fields
+  final double? baseSalary;
+  final double? overtimeHours;
+  final double? overtimeRate;
+  final double? overtimePay;
 
   SalaryCalculation({
     required this.userId,
@@ -35,6 +40,10 @@ class SalaryCalculation {
     required this.daysPending,
     required this.dailyRate,
     required this.calculatedSalary,
+    this.baseSalary,
+    this.overtimeHours,
+    this.overtimeRate,
+    this.overtimePay,
   });
 
   factory SalaryCalculation.fromJson(Map<String, dynamic> json) {
@@ -54,6 +63,18 @@ class SalaryCalculation {
       daysPending: json['daysPending'] ?? 0,
       dailyRate: (json['dailyRate'] ?? 0).toDouble(),
       calculatedSalary: (json['calculatedSalary'] ?? 0).toDouble(),
+      baseSalary: json['baseSalary'] != null
+          ? (json['baseSalary'] as num).toDouble()
+          : null,
+      overtimeHours: json['overtimeHours'] != null
+          ? (json['overtimeHours'] as num).toDouble()
+          : null,
+      overtimeRate: json['overtimeRate'] != null
+          ? (json['overtimeRate'] as num).toDouble()
+          : null,
+      overtimePay: json['overtimePay'] != null
+          ? (json['overtimePay'] as num).toDouble()
+          : null,
     );
   }
 
@@ -74,6 +95,10 @@ class SalaryCalculation {
       'daysPending': daysPending,
       'dailyRate': dailyRate,
       'calculatedSalary': calculatedSalary,
+      'baseSalary': baseSalary,
+      'overtimeHours': overtimeHours,
+      'overtimeRate': overtimeRate,
+      'overtimePay': overtimePay,
     };
   }
 

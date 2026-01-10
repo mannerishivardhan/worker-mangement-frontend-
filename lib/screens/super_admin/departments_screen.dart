@@ -9,7 +9,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../models/department.dart';
 import '../../services/department_service.dart';
-import '../../widgets/departments/department_dialog.dart';
+import '../../widgets/departments/comprehensive_department_dialog.dart';
 import 'department_history_screen.dart';
 
 class DepartmentsScreen extends StatefulWidget {
@@ -150,7 +150,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
         onPressed: () async {
           final result = await showDialog<bool>(
             context: context,
-            builder: (context) => const DepartmentDialog(),
+            builder: (context) => const ComprehensiveDepartmentDialog(),
           );
           if (result == true) {
             _loadDepartments(); // Reload list after adding
@@ -556,6 +556,163 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                       const Divider(),
                       const SizedBox(height: AppSpacing.lg),
 
+                      // Shifts & Roles Section
+                      Text(
+                        'Shifts & Roles Configuration',
+                        style: AppTypography.heading3.copyWith(
+                          color: AppColors.textPrimary(isDark),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+
+                      _buildDetailRow(
+                        'Has Shifts',
+                        department.hasShifts ? 'Yes' : 'No',
+                        department.hasShifts
+                            ? Icons.access_time
+                            : Icons.access_time_outlined,
+                        isDark,
+                        valueColor: department.hasShifts
+                            ? AppColors.primary(isDark)
+                            : AppColors.textSecondary(isDark),
+                      ),
+
+                      if (department.hasShifts && department.roles.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'Job Roles (${department.roles.length})',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.textSecondary(isDark),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        ...department.roles.map((role) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            decoration: BoxDecoration(
+                              color: AppColors.background(isDark),
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                              border: Border.all(color: AppColors.border(isDark)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.work_outline,
+                                      size: 16,
+                                      color: AppColors.primary(isDark),
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Text(
+                                      role.name,
+                                      style: AppTypography.bodyMedium.copyWith(
+                                        color: AppColors.textPrimary(isDark),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.sm,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary(isDark).withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        '${role.shifts.length} ${role.shifts.length == 1 ? 'shift' : 'shifts'}',
+                                        style: AppTypography.labelSmall.copyWith(
+                                          color: AppColors.primary(isDark),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (role.shifts.isNotEmpty) ...[
+                                  const SizedBox(height: AppSpacing.sm),
+                                  ...role.shifts.map((shift) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: AppSpacing.md,
+                                        bottom: AppSpacing.xs,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.schedule,
+                                            size: 14,
+                                            color: AppColors.textTertiary(isDark),
+                                          ),
+                                          const SizedBox(width: AppSpacing.xs),
+                                          Text(
+                                            shift.name,
+                                            style: AppTypography.bodySmall.copyWith(
+                                              color: AppColors.textSecondary(isDark),
+                                            ),
+                                          ),
+                                          const SizedBox(width: AppSpacing.xs),
+                                          Text(
+                                            '•',
+                                            style: AppTypography.bodySmall.copyWith(
+                                              color: AppColors.textTertiary(isDark),
+                                            ),
+                                          ),
+                                          const SizedBox(width: AppSpacing.xs),
+                                          Text(
+                                            shift.timeDisplay,
+                                            style: AppTypography.bodySmall.copyWith(
+                                              color: AppColors.textPrimary(isDark),
+                                              fontFamily: 'monospace',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ],
+                            ),
+                          );
+                        }),
+                      ] else if (department.hasShifts && department.roles.isEmpty) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        Container(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                            border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.warning_amber_outlined,
+                                color: Colors.orange,
+                                size: 20,
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                child: Text(
+                                  'No roles configured yet. Edit department to add roles and shifts.',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: Colors.orange.shade800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: AppSpacing.lg),
+                      const Divider(),
+                      const SizedBox(height: AppSpacing.lg),
+
                       // Action buttons
                       Row(
                         children: [
@@ -600,7 +757,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                                 final result = await showDialog<bool>(
                                   context: context,
                                   builder: (context) =>
-                                      DepartmentDialog(department: department),
+                                      ComprehensiveDepartmentDialog(department: department),
                                 );
                                 if (result == true) {
                                   _loadDepartments();

@@ -16,8 +16,13 @@ import '../../services/department_service.dart';
 
 class EmployeeDialog extends StatefulWidget {
   final Employee? employee;
+  final List<Department>? departments; // Optional pre-loaded departments
 
-  const EmployeeDialog({super.key, this.employee});
+  const EmployeeDialog({
+    super.key, 
+    this.employee,
+    this.departments,
+  });
 
   @override
   State<EmployeeDialog> createState() => _EmployeeDialogState();
@@ -37,7 +42,10 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
 
   List<Department> _departments = [];
   String? _selectedDepartmentId;
+  String? _selectedJobRole; // Selected job role from department
+
   String _selectedRole = 'employee';
+  bool _overtimeEligible = true;
   DateTime _joiningDate = DateTime.now();
   bool _isLoading = false;
   String? _errorMessage;
@@ -45,7 +53,14 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
   @override
   void initState() {
     super.initState();
-    _loadDepartments();
+    
+    // Use pre-loaded departments if provided, otherwise load them
+    if (widget.departments != null && widget.departments!.isNotEmpty) {
+      _departments = widget.departments!.where((d) => d.isActive).toList();
+      _initializeEmployeeData();
+    } else {
+      _loadDepartments();
+    }
 
     if (widget.employee != null) {
       // Editing existing employee
@@ -65,9 +80,23 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
 
       _employeeIdController.text = widget.employee!.employeeId;
       _salaryController.text = widget.employee!.monthlySalary.toString();
-      _selectedDepartmentId = widget.employee!.departmentId;
       _selectedRole = widget.employee!.role;
+      _overtimeEligible = widget.employee!.overtimeEligible ?? true; // NEW
       _joiningDate = widget.employee!.joiningDate;
+      // Note: _selectedDepartmentId and _selectedJobRole will be set after departments load
+    }
+  }
+
+  void _initializeEmployeeData() {
+    if (widget.employee != null) {
+      final employeeDeptId = widget.employee!.departmentId;
+      // Only set if department exists in loaded list
+      if (_departments.any((d) => d.id == employeeDeptId)) {
+        setState(() {
+          _selectedDepartmentId = employeeDeptId;
+          _selectedJobRole = widget.employee!.jobRole;
+        });
+      }
     }
   }
 
@@ -77,6 +106,7 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
       setState(() {
         _departments = departments.where((d) => d.isActive).toList();
       });
+      _initializeEmployeeData();
     } catch (e) {
       // Silently fail - departments dropdown will be empty
     }
@@ -110,8 +140,10 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
             ? '+91${_phoneController.text.trim()}'
             : null,
         'role': _selectedRole,
+        'jobRole': _selectedRole == 'admin' ? null : _selectedJobRole,
         'departmentId': _selectedDepartmentId,
         'monthlySalary': double.parse(_salaryController.text.trim()),
+        'overtimeEligible': _selectedRole == 'admin' ? false : _overtimeEligible,
         'joiningDate': _joiningDate.toIso8601String(),
         'password': 'Welcome@123', // Default password for new employees
       };
@@ -147,6 +179,41 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
         _joiningDate = picked;
       });
     }
+  }
+
+  /// Get job roles for the selected department
+  List<DropdownMenuItem<String>>? _getJobRolesForDepartment() {
+    if (_selectedDepartmentId == null || _departments.isEmpty) {
+      return [];
+    }
+
+    // Find the department
+    final departmentIndex = _departments.indexWhere(
+      (dept) => dept.id == _selectedDepartmentId,
+    );
+    
+    if (departmentIndex == -1) {
+      return [];
+    }
+    
+    final department = _departments[departmentIndex];
+
+    // Get roles from department configuration
+    if (department.roles.isEmpty) {
+      return [
+        const DropdownMenuItem(
+          value: 'General',
+          child: Text('General'),
+        ),
+      ];
+    }
+
+    return department.roles.map((role) {
+      return DropdownMenuItem(
+        value: role.name,
+        child: Text(role.name),
+      );
+    }).toList();
   }
 
   @override
@@ -325,31 +392,46 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
 
                 // Department Dropdown (REQUIRED)
                 DropdownButtonFormField<String>(
-                  value: _selectedDepartmentId,
+                  value: _departments.any((d) => d.id == _selectedDepartmentId) 
+                      ? _selectedDepartmentId 
+                      : null,
                   decoration: InputDecoration(
                     labelText: 'Department *',
                     prefixIcon: Icon(
                       Icons.business_outlined,
                       color: AppColors.textSecondary(isDark),
                     ),
+                    helperText: _departments.isEmpty ? 'Loading departments...' : null,
                   ),
-                  items: _departments.map((dept) {
-                    return DropdownMenuItem(
-                      value: dept.id,
-                      child: Text(dept.name),
-                    );
-                  }).toList(),
+                  items: _departments.isEmpty
+                      ? [
+                          const DropdownMenuItem(
+                            value: '',
+                            enabled: false,
+                            child: Text('Loading...'),
+                          ),
+                        ]
+                      : _departments.map((dept) {
+                          return DropdownMenuItem(
+                            value: dept.id,
+                            child: Text(dept.name),
+                          );
+                        }).toList(),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Department is required';
                     }
                     return null;
                   },
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedDepartmentId = value;
-                    });
-                  },
+                  onChanged: _departments.isEmpty
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _selectedDepartmentId = value;
+                            // Clear job role when department changes
+                            _selectedJobRole = null;
+                          });
+                        },
                 ),
 
                 const SizedBox(height: AppSpacing.md),
@@ -374,11 +456,107 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
                   onChanged: (value) {
                     setState(() {
                       _selectedRole = value!;
+                      // Clear job role when role changes to admin
+                      if (_selectedRole == 'admin') {
+                        _selectedJobRole = null;
+                      }
                     });
                   },
                 ),
 
                 const SizedBox(height: AppSpacing.md),
+
+                // Job Role Dropdown - Only show for employees, not admins
+                if (_selectedRole == 'employee')
+                  Builder(
+                    builder: (context) {
+                      final jobRoles = _getJobRolesForDepartment() ?? [];
+                      final hasValidJobRole = jobRoles.any((item) => item.value == _selectedJobRole);
+                      
+                      return DropdownButtonFormField<String>(
+                        value: hasValidJobRole ? _selectedJobRole : null,
+                        decoration: InputDecoration(
+                          labelText: 'Job Role',
+                          prefixIcon: Icon(
+                            Icons.assignment_ind_outlined,
+                            color: AppColors.textSecondary(isDark),
+                          ),
+                          helperText: _selectedDepartmentId == null
+                              ? 'Select a department first'
+                              : 'Specific job classification within department',
+                          helperMaxLines: 2,
+                        ),
+                        items: jobRoles,
+                        onChanged: _selectedDepartmentId == null
+                            ? null
+                            : (value) {
+                                setState(() {
+                                  _selectedJobRole = value;
+                                });
+                              },
+                      );
+                    },
+                  ),
+
+                if (_selectedRole == 'employee')
+                  const SizedBox(height: AppSpacing.md),
+
+                // Overtime Eligible Toggle - Only show for employees
+                if (_selectedRole == 'employee')
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: AppColors.border(isDark),
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.schedule_outlined,
+                          color: AppColors.textSecondary(isDark),
+                          size: 20,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Overtime Eligible',
+                                style: AppTypography.bodyMedium.copyWith(
+                                  color: AppColors.textPrimary(isDark),
+                                ),
+                              ),
+                              Text(
+                                'Can this employee work overtime?',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.textSecondary(isDark),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: _overtimeEligible,
+                          onChanged: (value) {
+                            setState(() {
+                              _overtimeEligible = value;
+                            });
+                          },
+                          activeColor: AppColors.primary(isDark),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                if (_selectedRole == 'employee')
+                  const SizedBox(height: AppSpacing.md),
 
                 // Monthly Salary
                 TextFormField(
@@ -403,7 +581,13 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
                     }
                     return null;
                   },
+                  onChanged: (value) {
+                    // Trigger rebuild to update calculated rates
+                    setState(() {});
+                  },
                 ),
+
+
 
                 const SizedBox(height: AppSpacing.md),
 

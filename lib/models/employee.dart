@@ -11,11 +11,16 @@ class Employee {
   final String email;
   final String phone;
   final String role;
+  final String? jobRole; // NEW: Job classification
   final String? departmentId;
   final String? departmentName;
   final String? shiftId;
   final String? shiftName;
   final double monthlySalary;
+  final double? hourlyRate; // NEW: Calculated hourly rate
+  final bool? overtimeEligible; // NEW: Can work overtime
+  final double? overtimeMultiplier; // NEW: Overtime rate multiplier
+  final double? overtimeRate; // NEW: Calculated overtime hourly rate
   final DateTime joiningDate;
   final bool isActive;
   final DateTime createdAt;
@@ -33,11 +38,16 @@ class Employee {
     required this.email,
     required this.phone,
     required this.role,
+    this.jobRole,
     this.departmentId,
     this.departmentName,
     this.shiftId,
     this.shiftName,
     this.monthlySalary = 0.0,
+    this.hourlyRate,
+    this.overtimeEligible,
+    this.overtimeMultiplier,
+    this.overtimeRate,
     required this.joiningDate,
     this.isActive = true,
     required this.createdAt,
@@ -65,12 +75,19 @@ class Employee {
           (json['phone'] as String?) ??
           '', // Handle existing employees without phone
       role: json['role'] ?? 'employee',
+      jobRole: json['job_role'] ?? json['jobRole'],
       departmentId: json['department_id'] ?? json['departmentId'],
       departmentName: json['department_name'] ?? json['departmentName'],
       shiftId: json['shift_id'] ?? json['shiftId'],
       shiftName: json['shift_name'] ?? json['shiftName'],
       monthlySalary: (json['monthly_salary'] ?? json['monthlySalary'] ?? 0)
           .toDouble(),
+      hourlyRate: (json['hourly_rate'] ?? json['hourlyRate'])?.toDouble(),
+      overtimeEligible: json['overtime_eligible'] ?? json['overtimeEligible'],
+      overtimeMultiplier:
+          (json['overtime_multiplier'] ?? json['overtimeMultiplier'])
+              ?.toDouble(),
+      overtimeRate: (json['overtime_rate'] ?? json['overtimeRate'])?.toDouble(),
       joiningDate: _parseDate(json['joining_date'] ?? json['joiningDate']),
       isActive: json['is_active'] ?? json['isActive'] ?? true,
       createdAt: _parseDate(json['created_at'] ?? json['createdAt']),
@@ -91,11 +108,16 @@ class Employee {
       'email': email,
       'phone': phone,
       'role': role,
+      'jobRole': jobRole,
       'departmentId': departmentId,
       'departmentName': departmentName,
       'shiftId': shiftId,
       'shiftName': shiftName,
       'monthlySalary': monthlySalary,
+      'hourlyRate': hourlyRate,
+      'overtimeEligible': overtimeEligible,
+      'overtimeMultiplier': overtimeMultiplier,
+      'overtimeRate': overtimeRate,
       'joiningDate': joiningDate.toIso8601String(),
       'isActive': isActive,
       'createdAt': createdAt.toIso8601String(),

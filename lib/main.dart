@@ -22,6 +22,7 @@ import 'screens/super_admin/departments_screen.dart';
 import 'screens/super_admin/employees_screen.dart';
 import 'screens/super_admin/attendance_screen.dart';
 import 'screens/super_admin/system_salary_dashboard.dart';
+import 'screens/super_admin/employees_salary_list_screen.dart';
 import 'screens/employee/my_salary_screen.dart';
 
 void main() async {
@@ -74,6 +75,8 @@ class MyApp extends StatelessWidget {
               '/attendance': (context) => const AttendanceScreen(),
               '/my-salary': (context) => const MySalaryScreen(),
               '/system-salary': (context) => const SystemSalaryDashboard(),
+              '/employees-salary-list': (context) =>
+                  const EmployeesSalaryListScreen(),
             },
           );
         },

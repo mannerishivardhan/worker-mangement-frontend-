@@ -49,15 +49,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     });
 
     try {
-      // Load today's attendance, all employees, and departments
-      final attendance = await _attendanceService.getTodayAttendance();
-      final employees = await _employeeService.getEmployees();
-      final departments = await _departmentService.getDepartments();
+      // Load all data in parallel for faster performance
+      final results = await Future.wait([
+        _attendanceService.getTodayAttendance(),
+        _employeeService.getEmployees(),
+        _departmentService.getDepartments(),
+      ]);
 
       setState(() {
-        _attendanceRecords = attendance;
-        _allEmployees = employees.where((e) => e.isActive).toList();
-        _departments = departments.where((d) => d.isActive).toList();
+        _attendanceRecords = results[0] as List<Attendance>;
+        _allEmployees = (results[1] as List<Employee>)
+            .where((e) => e.isActive)
+            .toList();
+        _departments = (results[2] as List<Department>)
+            .where((d) => d.isActive)
+            .toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -74,7 +80,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         userId: employee.id,
         entryTime: DateTime.now(),
       );
-      _loadData(); // Reload data
+      // Only reload attendance records for faster response
+      final attendance = await _attendanceService.getTodayAttendance();
+      setState(() {
+        _attendanceRecords = attendance;
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -103,7 +113,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         userId: employee.id,
         exitTime: DateTime.now(),
       );
-      _loadData(); // Reload data
+      // Only reload attendance records for faster response
+      final attendance = await _attendanceService.getTodayAttendance();
+      setState(() {
+        _attendanceRecords = attendance;
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -529,6 +543,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
+                      // Show overtime if available (NEW)
+                      if (attendance.overtimeHours != null &&
+                          attendance.overtimeHours! > 0)
+                        Text(
+                          '(OT: ${attendance.overtimeHours!.toStringAsFixed(1)}h)',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.success(isDark),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                          ),
+                        ),
                     ],
                   ),
                 ),

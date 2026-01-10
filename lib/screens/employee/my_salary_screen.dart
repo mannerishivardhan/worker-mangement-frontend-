@@ -349,7 +349,45 @@ class _MySalaryScreenState extends State<MySalaryScreen> {
             ),
             _buildBreakdownRow(
               theme,
-              'Calculated Salary',
+              'Base Salary',
+              currencyFormat.format(
+                salary.baseSalary ?? salary.calculatedSalary,
+              ),
+            ),
+            // Show overtime section if applicable (NEW)
+            if (salary.overtimeHours != null && salary.overtimeHours! > 0) ...[
+              const Divider(height: 24),
+              Text(
+                'Overtime',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.green,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildBreakdownRow(
+                theme,
+                'Overtime Hours',
+                '${salary.overtimeHours!.toStringAsFixed(1)} hrs',
+              ),
+              if (salary.overtimeRate != null)
+                _buildBreakdownRow(
+                  theme,
+                  'Overtime Rate',
+                  '${currencyFormat.format(salary.overtimeRate!)}/hr',
+                  isHighlight: true,
+                ),
+              if (salary.overtimePay != null)
+                _buildBreakdownRow(
+                  theme,
+                  'Overtime Pay',
+                  currencyFormat.format(salary.overtimePay!),
+                ),
+            ],
+            const Divider(height: 24),
+            _buildBreakdownRow(
+              theme,
+              'Total Salary',
               currencyFormat.format(salary.calculatedSalary),
               isTotal: true,
             ),

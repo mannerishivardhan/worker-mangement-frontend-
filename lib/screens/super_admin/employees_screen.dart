@@ -37,8 +37,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadEmployees();
-    _loadDepartments();
+    _loadData(); // Load both employees and departments in parallel
     _searchController.addListener(_filterEmployees);
   }
 
@@ -46,6 +45,35 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Load employees and departments in parallel for better performance
+      final results = await Future.wait([
+        _employeeService.getEmployees(),
+        _departmentService.getDepartments(),
+      ]);
+
+      setState(() {
+        _employees = results[0] as List<Employee>;
+        _filteredEmployees = results[0] as List<Employee>;
+        _departments = (results[1] as List<Department>)
+            .where((d) => d.isActive)
+            .toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _loadEmployees() async {
@@ -268,7 +296,9 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
         onPressed: () async {
           final result = await showDialog<bool>(
             context: context,
-            builder: (context) => const EmployeeDialog(),
+            builder: (context) => EmployeeDialog(
+              departments: _departments,
+            ),
           );
           if (result == true) {
             _loadEmployees(); // Reload list after adding
@@ -353,7 +383,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
     }
 
     return RefreshIndicator(
-      onRefresh: _loadEmployees,
+      onRefresh: _loadData, // Use parallel loading on refresh too
       child: ListView.separated(
         padding: const EdgeInsets.all(AppSpacing.md),
         itemCount: _filteredEmployees.length,
@@ -629,6 +659,15 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                           Icons.business_outlined,
                           isDark,
                         ),
+                      if (employee.jobRole != null && 
+                          employee.jobRole!.isNotEmpty &&
+                          employee.jobRole != 'null')
+                        _buildDetailRow(
+                          'Job Role',
+                          employee.jobRole!,
+                          Icons.work_outline,
+                          isDark,
+                        ),
                       if (employee.shiftName != null &&
                           employee.shiftName != 'null')
                         _buildDetailRow(
@@ -709,8 +748,10 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                                 Navigator.pop(context);
                                 final result = await showDialog<bool>(
                                   context: context,
-                                  builder: (context) =>
-                                      EmployeeDialog(employee: employee),
+                                  builder: (context) => EmployeeDialog(
+                                    employee: employee,
+                                    departments: _departments,
+                                  ),
                                 );
                                 if (result == true) {
                                   _loadEmployees();

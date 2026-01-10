@@ -19,6 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../screens/super_admin/shifts_screen.dart' as shifts_screen;
 
 /// App Routes - Named route constants
 class AppRoutes {
@@ -103,7 +104,7 @@ class AppRouter {
         ),
         GoRoute(
           path: AppRoutes.shifts,
-          builder: (context, state) => const ShiftsScreen(),
+          builder: (context, state) => const shifts_screen.ShiftsScreen(),
           redirect: (context, state) => _roleGuard(userRole, 'super_admin'),
         ),
         GoRoute(
@@ -225,12 +226,7 @@ class EmployeesScreen extends StatelessWidget {
       const Scaffold(body: Center(child: Text('Employees - Phase 3')));
 }
 
-class ShiftsScreen extends StatelessWidget {
-  const ShiftsScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Shifts - Phase 3')));
-}
+// ShiftsScreen is now imported from lib/screens/super_admin/shifts_screen.dart
 
 class AttendanceScreen extends StatelessWidget {
   const AttendanceScreen({super.key});

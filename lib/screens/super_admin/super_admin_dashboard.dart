@@ -262,6 +262,16 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
             Navigator.of(context).pushNamed('/system-salary');
           },
         ),
+        const SizedBox(height: AppSpacing.sm),
+        _buildActionButton(
+          context,
+          isDark: isDark,
+          icon: Icons.list_alt_outlined,
+          label: 'Employee Salary List',
+          onTap: () {
+            Navigator.of(context).pushNamed('/employees-salary-list');
+          },
+        ),
       ],
     );
   }
