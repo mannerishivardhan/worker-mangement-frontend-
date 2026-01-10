@@ -18,11 +18,7 @@ class EmployeeDialog extends StatefulWidget {
   final Employee? employee;
   final List<Department>? departments; // Optional pre-loaded departments
 
-  const EmployeeDialog({
-    super.key, 
-    this.employee,
-    this.departments,
-  });
+  const EmployeeDialog({super.key, this.employee, this.departments});
 
   @override
   State<EmployeeDialog> createState() => _EmployeeDialogState();
@@ -53,7 +49,7 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
   @override
   void initState() {
     super.initState();
-    
+
     // Use pre-loaded departments if provided, otherwise load them
     if (widget.departments != null && widget.departments!.isNotEmpty) {
       _departments = widget.departments!.where((d) => d.isActive).toList();
@@ -143,7 +139,9 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
         'jobRole': _selectedRole == 'admin' ? null : _selectedJobRole,
         'departmentId': _selectedDepartmentId,
         'monthlySalary': double.parse(_salaryController.text.trim()),
-        'overtimeEligible': _selectedRole == 'admin' ? false : _overtimeEligible,
+        'overtimeEligible': _selectedRole == 'admin'
+            ? false
+            : _overtimeEligible,
         'joiningDate': _joiningDate.toIso8601String(),
         'password': 'Welcome@123', // Default password for new employees
       };
@@ -191,28 +189,20 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
     final departmentIndex = _departments.indexWhere(
       (dept) => dept.id == _selectedDepartmentId,
     );
-    
+
     if (departmentIndex == -1) {
       return [];
     }
-    
+
     final department = _departments[departmentIndex];
 
     // Get roles from department configuration
     if (department.roles.isEmpty) {
-      return [
-        const DropdownMenuItem(
-          value: 'General',
-          child: Text('General'),
-        ),
-      ];
+      return [const DropdownMenuItem(value: 'General', child: Text('General'))];
     }
 
     return department.roles.map((role) {
-      return DropdownMenuItem(
-        value: role.name,
-        child: Text(role.name),
-      );
+      return DropdownMenuItem(value: role.name, child: Text(role.name));
     }).toList();
   }
 
@@ -392,8 +382,8 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
 
                 // Department Dropdown (REQUIRED)
                 DropdownButtonFormField<String>(
-                  value: _departments.any((d) => d.id == _selectedDepartmentId) 
-                      ? _selectedDepartmentId 
+                  value: _departments.any((d) => d.id == _selectedDepartmentId)
+                      ? _selectedDepartmentId
                       : null,
                   decoration: InputDecoration(
                     labelText: 'Department *',
@@ -401,7 +391,9 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
                       Icons.business_outlined,
                       color: AppColors.textSecondary(isDark),
                     ),
-                    helperText: _departments.isEmpty ? 'Loading departments...' : null,
+                    helperText: _departments.isEmpty
+                        ? 'Loading departments...'
+                        : null,
                   ),
                   items: _departments.isEmpty
                       ? [
@@ -471,8 +463,10 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
                   Builder(
                     builder: (context) {
                       final jobRoles = _getJobRolesForDepartment() ?? [];
-                      final hasValidJobRole = jobRoles.any((item) => item.value == _selectedJobRole);
-                      
+                      final hasValidJobRole = jobRoles.any(
+                        (item) => item.value == _selectedJobRole,
+                      );
+
                       return DropdownButtonFormField<String>(
                         value: hasValidJobRole ? _selectedJobRole : null,
                         decoration: InputDecoration(
@@ -586,8 +580,6 @@ class _EmployeeDialogState extends State<EmployeeDialog> {
                     setState(() {});
                   },
                 ),
-
-
 
                 const SizedBox(height: AppSpacing.md),
 

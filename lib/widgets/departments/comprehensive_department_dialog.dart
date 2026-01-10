@@ -41,19 +41,23 @@ class _ComprehensiveDepartmentDialogState
       _nameController.text = widget.department!.name;
       _descriptionController.text = widget.department!.description ?? '';
       _hasShifts = widget.department!.hasShifts;
-      
+
       // Load existing roles
       _roles = widget.department!.roles
-          .map((role) => RoleBuilder(
-                name: role.name,
-                shifts: role.shifts
-                    .map((shift) => ShiftBuilder(
-                          name: shift.name,
-                          startTime: _parseTime(shift.startTime),
-                          endTime: _parseTime(shift.endTime),
-                        ))
-                    .toList(),
-              ))
+          .map(
+            (role) => RoleBuilder(
+              name: role.name,
+              shifts: role.shifts
+                  .map(
+                    (shift) => ShiftBuilder(
+                      name: shift.name,
+                      startTime: _parseTime(shift.startTime),
+                      endTime: _parseTime(shift.endTime),
+                    ),
+                  )
+                  .toList(),
+            ),
+          )
           .toList();
     }
   }
@@ -76,10 +80,7 @@ class _ComprehensiveDepartmentDialogState
 
   void _addRole() {
     setState(() {
-      _roles.add(RoleBuilder(
-        name: '',
-        shifts: [],
-      ));
+      _roles.add(RoleBuilder(name: '', shifts: []));
     });
   }
 
@@ -91,11 +92,13 @@ class _ComprehensiveDepartmentDialogState
 
   void _addShift(int roleIndex) {
     setState(() {
-      _roles[roleIndex].shifts.add(ShiftBuilder(
-        name: '',
-        startTime: const TimeOfDay(hour: 9, minute: 0),
-        endTime: const TimeOfDay(hour: 17, minute: 0),
-      ));
+      _roles[roleIndex].shifts.add(
+        ShiftBuilder(
+          name: '',
+          startTime: const TimeOfDay(hour: 9, minute: 0),
+          endTime: const TimeOfDay(hour: 17, minute: 0),
+        ),
+      );
     });
   }
 
@@ -106,7 +109,10 @@ class _ComprehensiveDepartmentDialogState
   }
 
   Future<void> _selectTime(
-      int roleIndex, int shiftIndex, bool isStartTime) async {
+    int roleIndex,
+    int shiftIndex,
+    bool isStartTime,
+  ) async {
     final shift = _roles[roleIndex].shifts[shiftIndex];
     final picked = await showTimePicker(
       context: context,
@@ -176,16 +182,20 @@ class _ComprehensiveDepartmentDialogState
         if (_descriptionController.text.trim().isNotEmpty)
           'description': _descriptionController.text.trim(),
         'roles': _roles
-            .map((role) => {
-                  'name': role.name.trim(),
-                  'shifts': role.shifts
-                      .map((shift) => {
-                            'name': shift.name.trim(),
-                            'startTime': _formatTime(shift.startTime),
-                            'endTime': _formatTime(shift.endTime),
-                          })
-                      .toList(),
-                })
+            .map(
+              (role) => {
+                'name': role.name.trim(),
+                'shifts': role.shifts
+                    .map(
+                      (shift) => {
+                        'name': shift.name.trim(),
+                        'startTime': _formatTime(shift.startTime),
+                        'endTime': _formatTime(shift.endTime),
+                      },
+                    )
+                    .toList(),
+              },
+            )
             .toList(),
       };
 
@@ -291,14 +301,17 @@ class _ComprehensiveDepartmentDialogState
                           padding: const EdgeInsets.all(AppSpacing.md),
                           decoration: BoxDecoration(
                             color: Colors.red.withOpacity(0.1),
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusMd),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusMd,
+                            ),
                             border: Border.all(color: Colors.red),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline,
-                                  color: Colors.red),
+                              const Icon(
+                                Icons.error_outline,
+                                color: Colors.red,
+                              ),
                               const SizedBox(width: AppSpacing.sm),
                               Expanded(
                                 child: Text(
@@ -348,8 +361,9 @@ class _ComprehensiveDepartmentDialogState
                       Container(
                         decoration: BoxDecoration(
                           border: Border.all(color: AppColors.border(isDark)),
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusMd,
+                          ),
                         ),
                         padding: const EdgeInsets.all(AppSpacing.md),
                         child: Row(
@@ -426,8 +440,9 @@ class _ComprehensiveDepartmentDialogState
                             padding: const EdgeInsets.all(AppSpacing.xl),
                             decoration: BoxDecoration(
                               color: AppColors.surface(isDark),
-                              borderRadius:
-                                  BorderRadius.circular(AppSpacing.radiusMd),
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.radiusMd,
+                              ),
                               border: Border.all(
                                 color: AppColors.border(isDark),
                                 style: BorderStyle.solid,
@@ -513,7 +528,9 @@ class _ComprehensiveDepartmentDialogState
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : Text(isEditing ? 'Save Changes' : 'Create Department'),
+                        : Text(
+                            isEditing ? 'Save Changes' : 'Create Department',
+                          ),
                   ),
                 ],
               ),
@@ -637,8 +654,7 @@ class _ComprehensiveDepartmentDialogState
                   ...role.shifts.asMap().entries.map((entry) {
                     final shiftIndex = entry.key;
                     final shift = entry.value;
-                    return _buildShiftRow(
-                        roleIndex, shiftIndex, shift, isDark);
+                    return _buildShiftRow(roleIndex, shiftIndex, shift, isDark);
                   }),
               ],
             ),
@@ -649,9 +665,15 @@ class _ComprehensiveDepartmentDialogState
   }
 
   Widget _buildShiftRow(
-      int roleIndex, int shiftIndex, ShiftBuilder shift, bool isDark) {
+    int roleIndex,
+    int shiftIndex,
+    ShiftBuilder shift,
+    bool isDark,
+  ) {
     return Container(
-      key: ValueKey('shift_${roleIndex}_${shiftIndex}_${shift.startTime.hour}_${shift.startTime.minute}_${shift.endTime.hour}_${shift.endTime.minute}'),
+      key: ValueKey(
+        'shift_${roleIndex}_${shiftIndex}_${shift.startTime.hour}_${shift.startTime.minute}_${shift.endTime.hour}_${shift.endTime.minute}',
+      ),
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
@@ -789,10 +811,7 @@ class RoleBuilder {
   String name;
   List<ShiftBuilder> shifts;
 
-  RoleBuilder({
-    required this.name,
-    required this.shifts,
-  });
+  RoleBuilder({required this.name, required this.shifts});
 }
 
 class ShiftBuilder {

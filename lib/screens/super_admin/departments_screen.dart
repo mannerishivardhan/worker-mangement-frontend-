@@ -577,7 +577,8 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                             : AppColors.textSecondary(isDark),
                       ),
 
-                      if (department.hasShifts && department.roles.isNotEmpty) ...[
+                      if (department.hasShifts &&
+                          department.roles.isNotEmpty) ...[
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           'Job Roles (${department.roles.length})',
@@ -589,12 +590,18 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                         const SizedBox(height: AppSpacing.sm),
                         ...department.roles.map((role) {
                           return Container(
-                            margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                            margin: const EdgeInsets.only(
+                              bottom: AppSpacing.sm,
+                            ),
                             padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
                               color: AppColors.background(isDark),
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                              border: Border.all(color: AppColors.border(isDark)),
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.radiusSm,
+                              ),
+                              border: Border.all(
+                                color: AppColors.border(isDark),
+                              ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -621,14 +628,17 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.primary(isDark).withOpacity(0.1),
+                                        color: AppColors.primary(
+                                          isDark,
+                                        ).withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
                                         '${role.shifts.length} ${role.shifts.length == 1 ? 'shift' : 'shifts'}',
-                                        style: AppTypography.labelSmall.copyWith(
-                                          color: AppColors.primary(isDark),
-                                        ),
+                                        style: AppTypography.labelSmall
+                                            .copyWith(
+                                              color: AppColors.primary(isDark),
+                                            ),
                                       ),
                                     ),
                                   ],
@@ -646,29 +656,41 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                                           Icon(
                                             Icons.schedule,
                                             size: 14,
-                                            color: AppColors.textTertiary(isDark),
+                                            color: AppColors.textTertiary(
+                                              isDark,
+                                            ),
                                           ),
                                           const SizedBox(width: AppSpacing.xs),
                                           Text(
                                             shift.name,
-                                            style: AppTypography.bodySmall.copyWith(
-                                              color: AppColors.textSecondary(isDark),
-                                            ),
+                                            style: AppTypography.bodySmall
+                                                .copyWith(
+                                                  color:
+                                                      AppColors.textSecondary(
+                                                        isDark,
+                                                      ),
+                                                ),
                                           ),
                                           const SizedBox(width: AppSpacing.xs),
                                           Text(
                                             '•',
-                                            style: AppTypography.bodySmall.copyWith(
-                                              color: AppColors.textTertiary(isDark),
-                                            ),
+                                            style: AppTypography.bodySmall
+                                                .copyWith(
+                                                  color: AppColors.textTertiary(
+                                                    isDark,
+                                                  ),
+                                                ),
                                           ),
                                           const SizedBox(width: AppSpacing.xs),
                                           Text(
                                             shift.timeDisplay,
-                                            style: AppTypography.bodySmall.copyWith(
-                                              color: AppColors.textPrimary(isDark),
-                                              fontFamily: 'monospace',
-                                            ),
+                                            style: AppTypography.bodySmall
+                                                .copyWith(
+                                                  color: AppColors.textPrimary(
+                                                    isDark,
+                                                  ),
+                                                  fontFamily: 'monospace',
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -679,14 +701,19 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                             ),
                           );
                         }),
-                      ] else if (department.hasShifts && department.roles.isEmpty) ...[
+                      ] else if (department.hasShifts &&
+                          department.roles.isEmpty) ...[
                         const SizedBox(height: AppSpacing.sm),
                         Container(
                           padding: const EdgeInsets.all(AppSpacing.md),
                           decoration: BoxDecoration(
                             color: Colors.orange.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                            border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusSm,
+                            ),
+                            border: Border.all(
+                              color: Colors.orange.withOpacity(0.3),
+                            ),
                           ),
                           child: Row(
                             children: [
@@ -757,7 +784,9 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                                 final result = await showDialog<bool>(
                                   context: context,
                                   builder: (context) =>
-                                      ComprehensiveDepartmentDialog(department: department),
+                                      ComprehensiveDepartmentDialog(
+                                        department: department,
+                                      ),
                                 );
                                 if (result == true) {
                                   _loadDepartments();

@@ -296,9 +296,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
         onPressed: () async {
           final result = await showDialog<bool>(
             context: context,
-            builder: (context) => EmployeeDialog(
-              departments: _departments,
-            ),
+            builder: (context) => EmployeeDialog(departments: _departments),
           );
           if (result == true) {
             _loadEmployees(); // Reload list after adding
@@ -659,7 +657,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                           Icons.business_outlined,
                           isDark,
                         ),
-                      if (employee.jobRole != null && 
+                      if (employee.jobRole != null &&
                           employee.jobRole!.isNotEmpty &&
                           employee.jobRole != 'null')
                         _buildDetailRow(

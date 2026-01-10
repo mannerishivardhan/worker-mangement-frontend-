@@ -8,15 +8,13 @@ class DepartmentRole {
   final String name;
   final List<RoleShift> shifts;
 
-  DepartmentRole({
-    required this.name,
-    required this.shifts,
-  });
+  DepartmentRole({required this.name, required this.shifts});
 
   factory DepartmentRole.fromJson(Map<String, dynamic> json) {
     return DepartmentRole(
       name: json['name'] ?? '',
-      shifts: (json['shifts'] as List<dynamic>?)
+      shifts:
+          (json['shifts'] as List<dynamic>?)
               ?.map((s) => RoleShift.fromJson(s))
               .toList() ??
           [],
@@ -24,10 +22,7 @@ class DepartmentRole {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'shifts': shifts.map((s) => s.toJson()).toList(),
-    };
+    return {'name': name, 'shifts': shifts.map((s) => s.toJson()).toList()};
   }
 }
 
@@ -55,18 +50,14 @@ class RoleShift {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'startTime': startTime,
-      'endTime': endTime,
-    };
+    return {'name': name, 'startTime': startTime, 'endTime': endTime};
   }
 }
 
 class Department {
   final String id;
   final String?
-      departmentId; // Auto-generated ID like DEPT_XXXX (optional for old departments)
+  departmentId; // Auto-generated ID like DEPT_XXXX (optional for old departments)
   final String name;
   final String? code;
   final String? description;
@@ -116,7 +107,8 @@ class Department {
       employeeCount: json['employee_count'] ?? json['employeeCount'] ?? 0,
       isActive: json['is_active'] ?? json['isActive'] ?? true,
       hasShifts: json['has_shifts'] ?? json['hasShifts'] ?? false,
-      roles: (json['roles'] as List<dynamic>?)
+      roles:
+          (json['roles'] as List<dynamic>?)
               ?.map((r) => DepartmentRole.fromJson(r))
               .toList() ??
           [], // NEW

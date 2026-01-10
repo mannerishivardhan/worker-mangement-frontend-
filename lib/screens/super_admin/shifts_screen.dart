@@ -455,10 +455,20 @@ class _ShiftDialogState extends State<ShiftDialog> {
 
   // Department-specific job roles mapping
   final Map<String, List<String>> _departmentJobRoles = {
-    'Security': ['Normal Security Staff', 'Nepali Workers', 'Supervisor', 'Team Lead'],
+    'Security': [
+      'Normal Security Staff',
+      'Nepali Workers',
+      'Supervisor',
+      'Team Lead',
+    ],
     'Canteen': ['Mori Workers', 'Tiffin Masters', 'Chef', 'Kitchen Helper'],
     'Housekeeping': ['Cleaning Staff', 'Janitor', 'Supervisor'],
-    'Maintenance': ['Electrician', 'Plumber', 'Carpenter', 'General Maintenance'],
+    'Maintenance': [
+      'Electrician',
+      'Plumber',
+      'Carpenter',
+      'General Maintenance',
+    ],
     'Administration': ['Office Staff', 'Clerk', 'Manager', 'Assistant'],
   };
 
@@ -791,19 +801,11 @@ class _ShiftDialogState extends State<ShiftDialog> {
 
     if (roles.isEmpty) {
       // Return a generic "Other" option if no specific roles are defined
-      return [
-        const DropdownMenuItem(
-          value: 'Other',
-          child: Text('Other'),
-        ),
-      ];
+      return [const DropdownMenuItem(value: 'Other', child: Text('Other'))];
     }
 
     return roles.map((role) {
-      return DropdownMenuItem(
-        value: role,
-        child: Text(role),
-      );
+      return DropdownMenuItem(value: role, child: Text(role));
     }).toList();
   }
 }
