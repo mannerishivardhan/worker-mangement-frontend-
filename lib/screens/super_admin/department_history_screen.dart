@@ -59,10 +59,10 @@ class _DepartmentHistoryScreenState extends State<DepartmentHistoryScreen> {
     try {
       // Use trim to ensure no whitespace issues
       final departmentId = widget.department.id.trim();
-      
+
       print('Loading history for department ID: "$departmentId"');
       print('Department name: ${widget.department.name}');
-      
+
       if (departmentId.isEmpty) {
         throw Exception('Department ID is empty');
       }

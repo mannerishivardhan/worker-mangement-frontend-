@@ -234,7 +234,7 @@ class DepartmentService {
     print('DioException occurred: ${error.type}');
     print('Request URL: ${error.requestOptions.uri}');
     print('Error message: ${error.message}');
-    
+
     if (error.response != null) {
       print('Response status: ${error.response?.statusCode}');
       print('Response data: ${error.response?.data}');
