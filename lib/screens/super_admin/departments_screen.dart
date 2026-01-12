@@ -900,7 +900,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
     if (department.employeeCount > 0) {
       try {
         print('Fetching employees for department: ${department.id}');
-        
+
         // Fetch employees in this department
         final employees = await _employeeService.getEmployees(
           departmentId: department.id,
