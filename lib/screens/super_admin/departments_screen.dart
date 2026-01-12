@@ -9,7 +9,15 @@ import '../../core/theme/app_typography.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../models/department.dart';
 import '../../services/department_service.dart';
+import '../../services/employee_service.dart';
 import '../../widgets/departments/comprehensive_department_dialog.dart';
+import '../../widgets/departments/department_status_badge.dart';
+import '../../widgets/departments/department_head_card.dart';
+import '../../widgets/departments/deactivate_department_dialog.dart';
+import '../../widgets/departments/activate_department_dialog.dart';
+import '../../widgets/departments/assign_head_dialog.dart';
+import '../../widgets/departments/remove_head_dialog.dart';
+import '../../widgets/departments/transfer_employees_dialog.dart';
 import 'department_history_screen.dart';
 
 class DepartmentsScreen extends StatefulWidget {
@@ -21,6 +29,7 @@ class DepartmentsScreen extends StatefulWidget {
 
 class _DepartmentsScreenState extends State<DepartmentsScreen> {
   final DepartmentService _departmentService = DepartmentService();
+  final EmployeeService _employeeService = EmployeeService();
   final TextEditingController _searchController = TextEditingController();
 
   List<Department> _departments = [];
@@ -458,31 +467,65 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                                 ),
                                 if (department.code != null) ...[
                                   const SizedBox(height: AppSpacing.xs),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSpacing.sm,
-                                      vertical: AppSpacing.xs,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary(
-                                        isDark,
-                                      ).withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(
-                                        AppSpacing.radiusSm,
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: AppSpacing.sm,
+                                          vertical: AppSpacing.xs,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary(
+                                            isDark,
+                                          ).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            AppSpacing.radiusSm,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          department.code!,
+                                          style: AppTypography.labelSmall
+                                              .copyWith(
+                                                color: AppColors.primary(
+                                                  isDark,
+                                                ),
+                                              ),
+                                        ),
                                       ),
-                                    ),
-                                    child: Text(
-                                      department.code!,
-                                      style: AppTypography.labelSmall.copyWith(
-                                        color: AppColors.primary(isDark),
+                                      const SizedBox(width: AppSpacing.xs),
+                                      DepartmentStatusBadge(
+                                        status: department.status,
                                       ),
-                                    ),
+                                    ],
+                                  ),
+                                ] else ...[
+                                  const SizedBox(height: AppSpacing.xs),
+                                  DepartmentStatusBadge(
+                                    status: department.status,
                                   ),
                                 ],
                               ],
                             ),
                           ),
                         ],
+                      ),
+
+                      const SizedBox(height: AppSpacing.lg),
+                      const Divider(),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // Department Head Card
+                      DepartmentHeadCard(
+                        head: department.departmentHead,
+                        canEdit: true,
+                        onAssign: () async {
+                          Navigator.pop(context);
+                          await _handleAssignHead(department);
+                        },
+                        onRemove: () async {
+                          Navigator.pop(context);
+                          await _handleRemoveHead(department);
+                        },
                       ),
 
                       const SizedBox(height: AppSpacing.lg),
@@ -805,6 +848,42 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: AppSpacing.sm),
+                      // Status Management Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: department.status.toLowerCase() == 'active'
+                            ? OutlinedButton.icon(
+                                onPressed: () async {
+                                  Navigator.pop(context);
+                                  await _handleDeactivate(department);
+                                },
+                                icon: const Icon(Icons.cancel_outlined),
+                                label: const Text('Deactivate Department'),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.orange),
+                                  foregroundColor: Colors.orange,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: AppSpacing.md,
+                                  ),
+                                ),
+                              )
+                            : ElevatedButton.icon(
+                                onPressed: () async {
+                                  Navigator.pop(context);
+                                  await _handleActivate(department);
+                                },
+                                icon: const Icon(Icons.check_circle_outlined),
+                                label: const Text('Activate Department'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: AppSpacing.md,
+                                  ),
+                                ),
+                              ),
+                      ),
                     ],
                   ),
                 ),
@@ -814,6 +893,206 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleDeactivate(Department department) async {
+    // First, check if department has employees
+    if (department.employeeCount > 0) {
+      try {
+        print('Fetching employees for department: ${department.id}');
+        
+        // Fetch employees in this department
+        final employees = await _employeeService.getEmployees(
+          departmentId: department.id,
+          isActive: true,
+        );
+
+        print('Found ${employees.length} employees');
+
+        if (employees.isNotEmpty) {
+          // Show transfer dialog
+          final transferred = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => TransferEmployeesDialog(
+              department: department,
+              employees: employees,
+            ),
+          );
+
+          if (transferred != true) {
+            // User cancelled transfer
+            return;
+          }
+
+          // Employees transferred, reload departments to update count
+          await _loadDepartments();
+        }
+      } catch (e) {
+        print('Error loading employees: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load employees: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    // Now proceed with deactivation
+    final reason = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => DeactivateDepartmentDialog(
+        departmentName: department.name,
+        onConfirm: () {},
+      ),
+    );
+
+    if (reason != null && reason.isNotEmpty) {
+      try {
+        await _departmentService.deactivateDepartment(department.id, reason);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Department deactivated successfully'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          _loadDepartments();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to deactivate: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _handleActivate(Department department) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) =>
+          ActivateDepartmentDialog(departmentName: department.name),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _departmentService.activateDepartment(department.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Department activated successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          _loadDepartments();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to activate: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _handleAssignHead(Department department) async {
+    try {
+      // Fetch employees for this department
+      final employees = await _employeeService.getEmployees(
+        departmentId: department.id,
+        isActive: true,
+      );
+
+      if (!mounted) return;
+
+      final selectedEmployeeId = await showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AssignHeadDialog(
+          departmentName: department.name,
+          employees: employees,
+          currentHeadId: department.departmentHead?.employeeId,
+        ),
+      );
+
+      if (selectedEmployeeId != null) {
+        await _departmentService.assignDepartmentHead(
+          department.id,
+          selectedEmployeeId,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Department head assigned successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          _loadDepartments();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to assign head: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleRemoveHead(Department department) async {
+    final reason = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => RemoveHeadDialog(
+        departmentName: department.name,
+        headName: department.departmentHead?.employeeName ?? 'Unknown',
+      ),
+    );
+
+    if (reason != null) {
+      try {
+        await _departmentService.removeDepartmentHead(
+          department.id,
+          reason: reason.isEmpty ? null : reason,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Department head removed successfully'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          _loadDepartments();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to remove head: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   Widget _buildDetailRow(

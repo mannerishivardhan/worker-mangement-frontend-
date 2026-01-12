@@ -681,13 +681,12 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                           Icons.payments_outlined,
                           isDark,
                         ),
-                      if (employee.joiningDate != null)
-                        _buildDetailRow(
-                          'Joining Date',
-                          _formatDate(employee.joiningDate!),
-                          Icons.calendar_today_outlined,
-                          isDark,
-                        ),
+                      _buildDetailRow(
+                        'Joining Date',
+                        _formatDate(employee.joiningDate),
+                        Icons.calendar_today_outlined,
+                        isDark,
+                      ),
                       _buildDetailRow(
                         'Status',
                         employee.isActive ? 'Active' : 'Inactive',

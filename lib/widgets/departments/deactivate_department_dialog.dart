@@ -118,25 +118,7 @@ class _DeactivateDepartmentDialogState
 
   void _handleDeactivate() {
     if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
       Navigator.of(context).pop(_reasonController.text.trim());
-      widget.onConfirm();
     }
-  }
-
-  static Future<String?> show(
-    BuildContext context,
-    String departmentName,
-  ) async {
-    return await showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return DeactivateDepartmentDialog(
-          departmentName: departmentName,
-          onConfirm: () {},
-        );
-      },
-    );
   }
 }

@@ -49,7 +49,7 @@ class _AssignHeadDialogState extends State<AssignHeadDialog> {
               (e) =>
                   e.id != widget.currentHeadId &&
                   e.isActive &&
-                  (e.name.toLowerCase().contains(query.toLowerCase()) ||
+                  (e.fullName.toLowerCase().contains(query.toLowerCase()) ||
                       e.employeeId.toLowerCase().contains(query.toLowerCase())),
             )
             .toList();
@@ -123,10 +123,10 @@ class _AssignHeadDialogState extends State<AssignHeadDialog> {
                           return ListTile(
                             leading: CircleAvatar(
                               child: Text(
-                                employee.name.substring(0, 1).toUpperCase(),
+                                employee.fullName.substring(0, 1).toUpperCase(),
                               ),
                             ),
-                            title: Text(employee.name),
+                            title: Text(employee.fullName),
                             subtitle: Text('ID: ${employee.employeeId}'),
                             trailing: isSelected
                                 ? const Icon(
@@ -186,25 +186,6 @@ class _AssignHeadDialogState extends State<AssignHeadDialog> {
           child: const Text('Assign'),
         ),
       ],
-    );
-  }
-
-  static Future<String?> show(
-    BuildContext context,
-    String departmentName,
-    List<Employee> employees, {
-    String? currentHeadId,
-  }) async {
-    return await showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AssignHeadDialog(
-          departmentName: departmentName,
-          employees: employees,
-          currentHeadId: currentHeadId,
-        );
-      },
     );
   }
 }

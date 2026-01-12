@@ -310,8 +310,7 @@ class _DepartmentHistoryScreenState extends State<DepartmentHistoryScreen> {
                 children: [
                   // Action description
                   Text(
-                    historyItem.actionDescription ??
-                        historyItem.actionTypeDisplay,
+                    historyItem.actionDescription,
                     style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.textPrimary(isDark),
                       fontWeight: FontWeight.w500,
@@ -355,12 +354,12 @@ class _DepartmentHistoryScreenState extends State<DepartmentHistoryScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'by ${historyItem.performedByName ?? 'System'}',
+                        'by ${historyItem.performedByName}',
                         style: AppTypography.bodySmall.copyWith(
                           color: AppColors.textTertiary(isDark),
                         ),
                       ),
-                      if (historyItem.performedByRole != null) ...[
+                      ...[
                         const SizedBox(width: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -372,7 +371,7 @@ class _DepartmentHistoryScreenState extends State<DepartmentHistoryScreen> {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            _formatRole(historyItem.performedByRole!),
+                            _formatRole(historyItem.performedByRole),
                             style: AppTypography.bodySmall.copyWith(
                               color: AppColors.primary(isDark),
                               fontSize: 10,
@@ -418,13 +417,12 @@ class _DepartmentHistoryScreenState extends State<DepartmentHistoryScreen> {
                   ],
 
                   // Changed fields indicator
-                  if (historyItem.changedFields != null &&
-                      historyItem.changedFields!.isNotEmpty) ...[
+                  if (historyItem.changedFields.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: 4,
                       runSpacing: 4,
-                      children: historyItem.changedFields!.map((field) {
+                      children: historyItem.changedFields.map((field) {
                         return Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
@@ -528,11 +526,7 @@ class _DepartmentHistoryScreenState extends State<DepartmentHistoryScreen> {
                       'MMM dd, yyyy • hh:mm:ss a',
                     ).format(item.timestamp),
                   ),
-                  _buildDetailRow(
-                    isDark,
-                    'Performed By',
-                    item.performedByName ?? 'System',
-                  ),
+                  _buildDetailRow(isDark, 'Performed By', item.performedByName),
                   if (item.performedByRole != null)
                     _buildDetailRow(
                       isDark,
@@ -549,8 +543,7 @@ class _DepartmentHistoryScreenState extends State<DepartmentHistoryScreen> {
                     _buildDetailRow(isDark, 'Reason', item.reason!),
 
                   // Changed fields
-                  if (item.changedFields != null &&
-                      item.changedFields!.isNotEmpty) ...[
+                  if (item.changedFields.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.md),
                     Text(
                       'Changed Fields',
@@ -560,7 +553,7 @@ class _DepartmentHistoryScreenState extends State<DepartmentHistoryScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
-                    ...item.changedFields!.map(
+                    ...item.changedFields.map(
                       (field) => Padding(
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Text(

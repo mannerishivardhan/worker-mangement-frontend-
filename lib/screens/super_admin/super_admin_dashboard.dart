@@ -15,8 +15,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../providers/auth_provider.dart';
-import 'employees_screen.dart';
-import 'attendance_screen.dart';
 
 class SuperAdminDashboard extends StatefulWidget {
   const SuperAdminDashboard({super.key});

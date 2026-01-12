@@ -82,7 +82,7 @@ class _RemoveHeadDialogState extends State<RemoveHeadDialog> {
         ElevatedButton(
           onPressed: () {
             final reason = _reasonController.text.trim();
-            Navigator.of(context).pop(reason.isNotEmpty ? reason : null);
+            Navigator.of(context).pop(reason.isEmpty ? '' : reason);
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orange,
@@ -91,23 +91,6 @@ class _RemoveHeadDialogState extends State<RemoveHeadDialog> {
           child: const Text('Remove'),
         ),
       ],
-    );
-  }
-
-  static Future<String?> show(
-    BuildContext context,
-    String departmentName,
-    String headName,
-  ) async {
-    return await showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return RemoveHeadDialog(
-          departmentName: departmentName,
-          headName: headName,
-        );
-      },
     );
   }
 }
